@@ -16,11 +16,11 @@ The system includes three main roles:
 
 ## Team Members
 
-- Shib04 (Individual Project)
+- Shiba (Individual Project)
 
 ## Project Management
 
-- **Jira Board:** To be added.
+- **Jira Board:** [Freelance Marketplace Board](https://highshib.atlassian.net/jira/software/projects/FREEL/boards/1?filter=&groupBy=none)
 
 ## Database Management System
 
