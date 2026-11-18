@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}صندوق ایمیل آزمایشی{% endblock %}
+{% block content %}
+<h1>صندوق ایمیل آزمایشی</h1>
+<p class="lead">فقط در حالت توسعه (DEV_MODE=1). ایمیل‌های «ارسال‌شده» اینجا دیده می‌شوند.</p>
+{% if not mails %}
+  <p class="msg hint">هنوز ایمیلی ارسال نشده است.</p>
+{% endif %}
+{% for m in mails %}
+  <article class="mail">
+    <p><strong>{{ m.subject }}</strong> — <span dir="ltr">{{ m.time }}</span></p>
+    <p>به: <span dir="ltr">{{ m.to }}</span></p>
+    <p>لینک (تا {{ m.minutes }} دقیقه معتبر است):</p>
+    <p dir="ltr"><a href="{{ m.link }}">{{ m.link }}</a></p>
+  </article>
+{% endfor %}
+<p class="links"><a href="{{ url_for('auth.login') }}">صفحه ورود</a></p>
+{% endblock %}

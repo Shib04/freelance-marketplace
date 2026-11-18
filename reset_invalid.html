@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}لینک نامعتبر{% endblock %}
+{% block content %}
+<h1>لینک نامعتبر است</h1>
+<p class="lead">این لینک بازیابی منقضی شده، قبلاً استفاده شده یا درست نیست. برای دریافت لینک جدید دوباره درخواست دهید.</p>
+<p class="links"><a class="btn btn-link" href="{{ url_for('auth.forgot') }}">درخواست لینک جدید</a></p>
+<p class="links"><a href="{{ url_for('auth.login') }}">بازگشت به صفحه ورود</a></p>
+{% endblock %}
