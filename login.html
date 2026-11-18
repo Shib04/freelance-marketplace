@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}ورود{% endblock %}
+{% block content %}
+<h1>ورود به حساب کاربری</h1>
+{% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+<form method="post" action="{{ url_for('auth.login') }}" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {{ field("email", "ایمیل", type="email", value=email, autocomplete="username", ltr=True) }}
+  {{ field("password", "رمز عبور", type="password", autocomplete="current-password", ltr=True, toggle=True) }}
+  <button type="submit" class="btn">ورود</button>
+</form>
+<p class="links">
+  <a href="{{ url_for('auth.forgot') }}">رمز عبور را فراموش کرده‌اید؟</a><br>
+  حساب ندارید؟ <a href="{{ url_for('auth.signup') }}">ایجاد حساب جدید</a>
+</p>
+{% endblock %}
