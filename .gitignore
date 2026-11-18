@@ -1,1 +1,25 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
 
+# Secrets and local config
+.env
+*.env
+*.local
+
+# Local DB artifacts
+*.dump
+*.backup
+*.log
+pgadmin4.db
+
+# Dependencies / build (future app code)
+node_modules/
+__pycache__/
+*.pyc
+venv/
+dist/
+build/

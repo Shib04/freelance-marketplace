@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}بازیابی رمز عبور{% endblock %}
+{% block content %}
+<h1>بازیابی رمز عبور</h1>
+<p class="lead">ایمیل حساب خود را وارد کنید تا لینک تعیین رمز جدید برای شما ارسال شود.</p>
+<form method="post" action="{{ url_for('auth.forgot') }}" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {{ field("email", "ایمیل", type="email", value=email, error=error, autocomplete="email", ltr=True) }}
+  <button type="submit" class="btn">ارسال لینک بازیابی</button>
+</form>
+<p class="links"><a href="{{ url_for('auth.login') }}">بازگشت به صفحه ورود</a></p>
+{% endblock %}

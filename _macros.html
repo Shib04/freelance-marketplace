@@ -1,0 +1,15 @@
+{# One labelled form field with its error/hint text and an optional show/hide button #}
+{% macro field(id, label, type="text", value="", error=None, autocomplete=None, ltr=False, hint=None, toggle=False) %}
+<div class="field{% if error %} has-error{% endif %}">
+  <label for="{{ id }}">{{ label }}</label>
+  <div class="input-wrap{% if toggle %} has-toggle{% endif %}">
+    <input id="{{ id }}" name="{{ id }}" type="{{ type }}" value="{{ value }}" required
+           {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+           {% if ltr %}dir="ltr"{% endif %}
+           {% if error %}aria-invalid="true" aria-describedby="{{ id }}-msg"{% elif hint %}aria-describedby="{{ id }}-msg"{% endif %}>
+    {% if toggle %}<button type="button" class="toggle" data-toggle-password="{{ id }}" aria-pressed="false" hidden>نمایش</button>{% endif %}
+  </div>
+  {% if error %}<p class="msg error" id="{{ id }}-msg">{{ error }}</p>
+  {% elif hint %}<p class="msg hint" id="{{ id }}-msg">{{ hint }}</p>{% endif %}
+</div>
+{% endmacro %}

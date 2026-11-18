@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}ثبت‌نام{% endblock %}
+{% block content %}
+<h1>ایجاد حساب جدید</h1>
+<form method="post" action="{{ url_for('auth.signup') }}" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {{ field("first_name", "نام", value=values.first_name, error=errors.first_name, autocomplete="given-name") }}
+  {{ field("last_name", "نام خانوادگی", value=values.last_name, error=errors.last_name, autocomplete="family-name") }}
+  {{ field("email", "ایمیل", type="email", value=values.email, error=errors.email, autocomplete="email", ltr=True) }}
+  {{ field("password", "رمز عبور", type="password", error=errors.password, autocomplete="new-password", ltr=True, toggle=True,
+           hint="حداقل ۸ کاراکتر، شامل حرف و عدد") }}
+  {{ field("password2", "تکرار رمز عبور", type="password", error=errors.password2, autocomplete="new-password", ltr=True, toggle=True) }}
+  <button type="submit" class="btn">ثبت‌نام</button>
+</form>
+<p class="links">قبلاً ثبت‌نام کرده‌اید؟ <a href="{{ url_for('auth.login') }}">ورود</a></p>
+{% endblock %}

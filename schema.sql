@@ -13,6 +13,7 @@ BEGIN;
 -- ---------------------------------------------------------------------
 -- 0. Reset (development only)
 -- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS password_reset_tokens CASCADE;
 DROP TABLE IF EXISTS proposals          CASCADE;
 DROP TABLE IF EXISTS project_skills     CASCADE;
 DROP TABLE IF EXISTS project_categories CASCADE;
@@ -89,6 +90,23 @@ CREATE OR REPLACE FUNCTION is_admin(p_user_id BIGINT) RETURNS BOOLEAN
 LANGUAGE sql STABLE AS $$
     SELECT EXISTS (SELECT 1 FROM admins WHERE user_id = p_user_id);
 $$;
+
+-- ---------------------------------------------------------------------
+-- 3b. password_reset_tokens (phase 3: "forgot password" links)
+--     The raw token is only sent to the user; the database stores just its
+--     SHA-256 fingerprint. A token is single-use (used_at) and time-limited (expires_at).
+-- ---------------------------------------------------------------------
+CREATE TABLE password_reset_tokens (
+    id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id    BIGINT NOT NULL REFERENCES users (id) ON DELETE RESTRICT,
+    token_hash CHAR(64) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at    TIMESTAMPTZ,
+    CONSTRAINT password_reset_tokens_hash_key UNIQUE (token_hash),
+    CONSTRAINT password_reset_tokens_expiry_chk CHECK (expires_at > created_at)
+);
+CREATE INDEX password_reset_tokens_user_idx ON password_reset_tokens (user_id);
 
 -- ---------------------------------------------------------------------
 -- 4. profiles_user  (at most one profile per regular user)

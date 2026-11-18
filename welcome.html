@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}خوش آمدید{% endblock %}
+{% block content %}
+<h1>خوش آمدید، {{ user.first_name }} {{ user.last_name }}</h1>
+<dl class="info">
+  <dt>شناسه کاربر</dt><dd dir="ltr">{{ user.id }}</dd>
+  <dt>ایمیل</dt><dd dir="ltr">{{ user.email }}</dd>
+  <dt>نوع حساب</dt><dd>{{ "مدیر" if user.is_admin else "کاربر عادی" }}</dd>
+</dl>
+<p class="lead">این صفحهٔ موقت است و فقط برای کاربران واردشده قابل مشاهده است.</p>
+<form method="post" action="{{ url_for('auth.logout') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="btn btn-secondary">خروج</button>
+</form>
+{% endblock %}

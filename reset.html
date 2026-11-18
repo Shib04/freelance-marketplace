@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}تعیین رمز جدید{% endblock %}
+{% block content %}
+<h1>تعیین رمز عبور جدید</h1>
+<form method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {{ field("password", "رمز عبور جدید", type="password", error=errors.password, autocomplete="new-password", ltr=True, toggle=True,
+           hint="حداقل ۸ کاراکتر، شامل حرف و عدد") }}
+  {{ field("password2", "تکرار رمز عبور جدید", type="password", error=errors.password2, autocomplete="new-password", ltr=True, toggle=True) }}
+  <button type="submit" class="btn">ذخیره رمز جدید</button>
+</form>
+{% endblock %}
