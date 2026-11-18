@@ -1,293 +1,177 @@
-# Freelance Marketplace
+# Marketplace Freelance
 
-A freelance marketplace platform (similar to Upwork, Ponisha, and Karlancer) where clients post projects, freelancers submit proposals, and clients can accept at most one proposal per project.
+پلتفرم فریلنسری (مشابه Upwork / پونیشا / کارلنسر): کارفرما پروژه ثبت می‌کند، فریلنسر پیشنهاد می‌دهد، کارفرما حداکثر یک پیشنهاد را می‌پذیرد.
+این مخزن در **فاز اول** شامل تحلیل نیازمندی‌ها و **طراحی و پیاده‌سازی پایگاه داده** است.
 
-This repository covers **Phase 1**, including requirements analysis, database design, and implementation.
-
-## Project Information
-
-| Item | Description |
+| مورد | مقدار |
 |---|---|
-| DBMS | PostgreSQL 17 (pgAdmin 4) |
-| Team | Shib04 |
-| Jira | [[Board Link]](https://highshib.atlassian.net/jira/software/projects/FM/boards/3?filter=&groupBy=none) |
-| User Roles | Regular User (acting as both Client and Freelancer) and Admin |
+| DBMS | **PostgreSQL 17** (pgAdmin 4) |
+| تیم | `[نام اعضا]` |
+| Jira | `[لینک برد]` |
+| نقش‌ها | کاربر عادی (هم کارفرما، هم فریلنسر) و مدیر (Admin) |
 
-## Repository Structure
+## ساختار مخزن
 
-```text
+```
 ├── README.md
 ├── .gitignore
+├── web/               # برنامهٔ وب: ورود، ثبت‌نام، بازیابی رمز (فاز ۳)
 ├── database/
-│   ├── schema.sql     # Tables, constraints, indexes, and triggers
-│   ├── seed.sql       # Sample data
-│   ├── queries.sql    # Application queries
-│   └── tests.sql      # Automated constraint and business rule tests
+│   ├── schema.sql     # ساخت جدول‌ها، قیدها، ایندکس‌ها، تریگرها
+│   ├── seed.sql       # داده نمونه
+│   ├── queries.sql    # Queryهای کاربردی
+│   └── tests.sql      # تست خودکار قیدها و قواعد کسب‌وکار
 └── docs/
-    ├── erd.png        # ERD diagram
+    ├── erd.png        # نمودار ERD
     ├── requirements.md
     ├── jira-backlog.md
     └── setup-guide.md
 ```
 
-## Setup and Installation
-
-### Requirements
-
-- PostgreSQL 17
-- pgAdmin 4 (optional, for graphical database management)
-
-### Database Setup
-
-Create the database:
+## نحوهٔ ایجاد دیتابیس و اجرا
 
 ```bash
-psql -U postgres -c "CREATE DATABASE freelance_lab ENCODING 'UTF8';"
+psql -U postgres -c "CREATE DATABASE lab_freelance ENCODING 'UTF8';"
+psql -U postgres -d lab_freelance -v ON_ERROR_STOP=1 -f database/schema.sql
+psql -U postgres -d lab_freelance -v ON_ERROR_STOP=1 -f database/seed.sql
+psql -U postgres -d lab_freelance -f database/queries.sql
+psql -U postgres -d lab_freelance -f database/tests.sql
 ```
 
-Run the SQL files in the following order:
+`schema.sql` قابل اجرای مجدد است (ابتدا جدول‌های قبلی را DROP می‌کند — فقط برای محیط توسعه). جزئیات pgAdmin در `docs/setup-guide.md`.
 
-```bash
-psql -U postgres -d freelance_lab -v ON_ERROR_STOP=1 -f database/schema.sql
-psql -U postgres -d freelance_lab -v ON_ERROR_STOP=1 -f database/seed.sql
-psql -U postgres -d freelance_lab -f database/queries.sql
-psql -U postgres -d freelance_lab -f database/tests.sql
-```
+## ERD
 
-**Note:** `schema.sql` is designed to be re-runnable. It drops existing tables before recreating them, so it should only be used in a development environment.
+![ERD](docs/erd.png)
 
-For instructions on running the SQL files through pgAdmin 4, see [docs/setup-guide.md](docs/setup-guide.md).
+## جدول‌ها (۱۳ جدول)
 
-## Database Design
-
-### Entity Relationship Diagram
-
-![Entity Relationship Diagram](docs/erd.png)
-
-### Database Tables
-
-The database consists of 12 tables:
-
-| Table | Description |
+| جدول | نقش |
 |---|---|
-| `users` | Stores all user accounts, including regular users and administrators. |
-| `admins` | Stores administrator accounts and the timestamp of their promotion. |
-| `profiles_user` | Stores user profile information. Each user can have at most one profile. |
-| `skills` | Stores available skills. |
-| `categories` | Stores project categories. |
-| `profile_skills` | Junction table representing the many-to-many relationship between profiles and skills. |
-| `portfolio_items` | Stores portfolio items associated with user profiles. |
-| `certificates` | Stores certificates associated with user profiles. |
-| `projects` | Stores projects posted by clients. |
-| `project_categories` | Junction table connecting projects and categories. |
-| `project_skills` | Junction table connecting projects and required skills. |
-| `proposals` | Stores freelancer proposals submitted for projects. |
+| `users` | همهٔ حساب‌ها (عادی و مدیر) |
+| `admins` | فهرست حساب‌های دارای دسترسی مدیریتی + زمان اعطا |
+| `profiles_user` | پروفایل (حداکثر یکی برای هر کاربر) |
+| `skills`, `categories` | جدول‌های مرجع (نام/عنوان یکتا) |
+| `profile_skills` | واسط M:N پروفایل ↔ مهارت |
+| `portfolio_items`, `certificates` | ۱:N از پروفایل |
+| `projects` | پروژه‌ها (متعلق به یک کارفرما) |
+| `project_categories`, `project_skills` | واسط M:N پروژه ↔ دسته / مهارت |
+| `proposals` | پیشنهادها (پروژه + فریلنسر) |
+| `password_reset_tokens` | لینک‌های بازیابی رمز (فقط اثر انگشت SHA-256 توکن ذخیره می‌شود؛ یک‌بارمصرف و زمان‌دار) |
 
-### Key Design Decisions
+## تصمیم‌های طراحی و دلیل‌ها
 
-#### 1. Administrator Management
+**۱. مدل‌سازی مدیر: جدول جدا `admins`، نه ستون `role`.**
+صورت مسئله می‌خواهد «زمان اعطای دسترسی» ثبت شود و مدیر «فقط به قابلیت‌های مدیریتی» دسترسی داشته باشد. جدول جدا (۱:۱ با `users`) هم زمان اعطا (`granted_at`) و هم اعطاکننده (`granted_by`) را نگه می‌دارد، چند مدیر را پشتیبانی می‌کند و بدون ستون‌های NULL‌دار در `users` است. تشخیص مدیر با `is_admin(user_id)`.
+هر دو قاعدهٔ «مدیر پروژه/پیشنهاد/پروفایل ندارد» با **تریگر** اجرا می‌شود (چون CHECK نمی‌تواند جدول دیگر را ببیند) و در جهت عکس هم برقرار است: کاربری که پروژه/پیشنهاد/پروفایل دارد مدیر نمی‌شود.
 
-Administrators are stored in a separate `admins` table rather than being identified by a `role` column in the `users` table.
+**۲. «کارفرما» و «فریلنسر» جدول جدا نیستند.**
+هر کاربر عادی هر دو نقش را دارد؛ نقش از رابطه می‌آید: `projects.employer_id` و `proposals.freelancer_id` هر دو به `users` اشاره می‌کنند. بنابراین نام فریلنسر در `proposals` تکرار نمی‌شود (نرمال‌سازی).
 
-- The table stores `granted_at` and `granted_by` information.
-- Multiple administrators are supported.
-- The `is_admin(user_id)` function determines whether a user is an administrator.
-- Triggers prevent administrators from creating projects, submitting proposals, or creating profiles.
-- Users who already have projects, proposals, or profiles cannot be promoted to administrators.
+**۳. جدول‌های واسط برای رابطه‌های چند‌به‌چند** با کلید اصلی ترکیبی (جلوگیری از تکرار): `profile_skills`, `project_categories`, `project_skills`. مهارت‌ها در `profiles_user` به‌صورت ستون متنی ذخیره نمی‌شوند (نقض نرمال‌سازی).
 
-#### 2. Client and Freelancer Roles
+**۴. یکتایی بدون حساسیت به حروف.** ایمیل، نام مهارت و عنوان دسته با `UNIQUE INDEX ON lower(...)` یکتا هستند (`Python` و `python` یکی حساب می‌شوند). شمارهٔ موبایل اختیاری و در صورت وجود یکتاست (تصمیم ما؛ برای ورود با کد در آینده لازم می‌شود).
 
-Clients and freelancers are not stored in separate tables.
+**۵. رمز عبور.** فقط `password_hash`؛ CHECK طول ≥ ۶۰ (bcrypt = ۶۰ کاراکتر) جلوی ذخیرهٔ ساده‌انگارانهٔ متن ساده را می‌گیرد. هش‌کردن واقعی وظیفهٔ برنامه است.
 
-A regular user can act as both:
+**۶. پروژه ساعتی/ثابت با یک ستون.** `projects.budget` و `proposals.amount` بسته به `pricing_type` یا مبلغ کل یا نرخ ساعتی‌اند (دو ستون جدا بیشتر NULL تولید می‌کرد). `estimated_hours` فقط برای پروژهٔ ساعتی مجاز است (تریگر). تغییر `pricing_type` بعد از دریافت پیشنهاد ممنوع است (وگرنه معنای مبلغ‌ها خراب می‌شود).
 
-- A client when posting a project (`projects.employer_id`).
-- A freelancer when submitting a proposal (`proposals.freelancer_id`).
+**۷. پیشنهاد پذیرفته‌شده ذخیره دوباره نمی‌شود.** ستونی مثل `projects.accepted_proposal_id` نداریم؛ از `proposals.status='accepted'` به‌دست می‌آید (جلوگیری از داده زائد و ناسازگاری). «حداکثر یک پذیرفته‌شده» با **ایندکس یکتای جزئی** `WHERE status='accepted'` تضمین می‌شود، علاوه بر تریگر.
 
-#### 3. Many-to-Many Relationships
+**۸. حذف.** همهٔ کلیدهای خارجی به `users`، `projects`، `skills`، `categories` از نوع `ON DELETE RESTRICT` هستند؛ کاربران و پروژه‌ها حذف نمی‌شوند، بلکه `inactive/blocked` یا `cancelled` می‌شوند تا سوابق بماند. `CASCADE` فقط برای داده‌های وابستهٔ بی‌سابقه: جزئیات پروفایل (مهارت/نمونه‌کار/گواهینامه) و ردیف‌های واسط پروژه. `admins.granted_by` در حذف `SET NULL` می‌شود تا تاریخچه بماند.
 
-Junction tables with composite primary keys are used for many-to-many relationships:
+**۹. وضعیت‌ها با `CHECK` روی متن** (نه `ENUM`)؛ افزودن وضعیت جدید بعداً فقط تغییر یک CHECK است.
 
-- `profile_skills`
-- `project_categories`
-- `project_skills`
+**۱۰. واحد پول.** یک واحد (تومان). `NUMERIC(14,2)` به‌جای float برای پول.
 
-Skills are stored in a separate table rather than being saved as plain text in user profiles.
+**۱۱. زمان‌ها** `TIMESTAMPTZ`؛ `updated_at` با تریگر `set_updated_at` خودکار به‌روز می‌شود.
 
-#### 4. Case-Insensitive Uniqueness
+**۱۲. ایندکس‌ها** روی همهٔ کلیدهای خارجی پرکاربرد و `projects(status, created_at DESC)` برای فهرست پروژه‌های باز.
 
-Case-insensitive unique indexes are used for:
+## چرخهٔ وضعیت‌ها
 
-- User email addresses (`lower(email)`).
-- Skill names (`lower(name)`).
-- Category titles (`lower(title)`).
+**پروژه** (تریگر `fn_projects_before_update`):
 
-Mobile numbers are optional but must be unique when provided.
-
-#### 5. Password Security
-
-Only `password_hash` is stored in the database.
-
-A CHECK constraint requires the hash to contain at least 60 characters, matching the standard bcrypt hash length. Actual password hashing is handled by the application.
-
-#### 6. Project and Proposal Pricing
-
-Fixed-price and hourly projects use a single `budget` column in `projects`, while proposals use a single `amount` column in `proposals`.
-
-The `pricing_type` determines how these values are interpreted.
-
-- `estimated_hours` is only applicable to hourly projects and is enforced through a trigger.
-- Changing a project's pricing type after proposals have been submitted is not allowed.
-
-#### 7. Accepted Proposals
-
-The accepted proposal is derived from `proposals.status = 'accepted'`.
-
-A separate `accepted_proposal_id` column is not stored in the `projects` table to avoid redundant data.
-
-A partial unique index on accepted proposals ensures that at most one proposal can be accepted for each project. A trigger also enforces this business rule.
-
-#### 8. Deletion Rules
-
-Foreign keys referencing users, projects, skills, and categories generally use `RESTRICT` to prevent deleting records that have dependent data.
-
-Users and projects are deactivated rather than permanently deleted.
-
-`CASCADE` is used only for dependent profile details and project junction records.
-
-The `admins.granted_by` foreign key uses `SET NULL`.
-
-#### 9. Status Management
-
-Statuses are stored as text values with CHECK constraints rather than using PostgreSQL ENUM types.
-
-#### 10. Currency and Numeric Precision
-
-The platform uses Toman as its currency.
-
-Monetary values use `NUMERIC(14,2)` instead of floating-point types to avoid precision problems.
-
-#### 11. Timestamps
-
-`TIMESTAMPTZ` is used for timestamp columns.
-
-The `updated_at` field is automatically maintained using the `set_updated_at` trigger function.
-
-#### 12. Indexing
-
-Indexes are created on frequently queried foreign keys and commonly filtered or sorted columns.
-
-For example:
-
-- Foreign key columns.
-- `projects(status, created_at DESC)`.
-
-## Business Rules and State Transitions
-
-### Project Lifecycle
-
-```text
+```
 draft ──► open ──► in_progress ──► completed
   │         │            │
   └─────────┴────────────┴──► cancelled
 ```
 
-- A project can move from `open` to `in_progress` only when a proposal is accepted. This transition happens automatically upon acceptance.
-- `completed` and `cancelled` are final states.
-- A new project can be created in either `draft` or `open` status.
-- Cancelling a project automatically rejects all its pending proposals.
+- `open → in_progress` فقط وقتی یک پیشنهاد پذیرفته‌شده وجود دارد (در عمل خودکار با پذیرش پیشنهاد).
+- `completed` و `cancelled` نهایی‌اند. پروژهٔ جدید فقط `draft` یا `open` شروع می‌شود.
+- با لغو پروژه، پیشنهادهای `pending` آن خودکار `rejected` می‌شوند.
 
-### Proposal Lifecycle
+**پیشنهاد** (تریگر `fn_proposals_before_update`):
 
-```text
-pending ──► accepted
-    │
-    ├──────► rejected
-    │
-    └──────► withdrawn
+```
+pending ──► accepted | rejected | withdrawn   (هر سه نهایی)
 ```
 
-All three resulting states are final.
+- ثبت پیشنهاد: فقط برای پروژهٔ `open`، فقط `pending`، نه برای پروژهٔ خود، نه توسط مدیر، فقط کاربر `active`.
+- پذیرش: فقط وقتی پروژه `open` است؛ بعد از آن پروژه `in_progress` و سایر `pending`ها `rejected` می‌شوند (تصمیم ما، Q2 در `requirements.md`).
+- فقط پیشنهاد `pending` قابل ویرایش (مبلغ/متن/زمان) است.
+- `withdrawn` یعنی فریلنسر پیش از پذیرش پس گرفته؛ `rejected` یعنی کارفرما (یا لغو پروژه / پذیرش دیگری) رد کرده.
 
-**Proposal submission rules:**
+## سناریوهای آزمون
 
-- Proposals can only be submitted for projects with `open` status.
-- A proposal must initially have `pending` status.
-- Users cannot submit proposals for their own projects.
-- Administrators cannot submit proposals.
-- Only active users can submit proposals.
+در `database/tests.sql` (۳۶ تست خودکار). هر تست در زیرتراکنش اجرا و برگردانده می‌شود، پس داده نمونه دست‌نخورده می‌ماند. SQLSTATE: `23505` یکتایی، `23503` کلید خارجی، `23514` CHECK/قاعده.
 
-**Proposal acceptance rules:**
+| # | سناریو | نتیجهٔ مورد انتظار | لایهٔ اعمال |
+|---|---|---|---|
+| 1–2 | ایمیل تکراری (حتی با حروف بزرگ) | 23505 | `UNIQUE INDEX lower(email)` |
+| 3–4 | کلید خارجی نامعتبر | 23503 | FOREIGN KEY |
+| 5 | پیشنهاد تکراری یک کاربر برای یک پروژه | 23505 | `UNIQUE(project_id, freelancer_id)` |
+| 6–8 | بودجه / نرخ ساعتی صفر یا منفی | 23514 | `CHECK budget > 0` |
+| 9–10 | مبلغ پیشنهاد صفر / زمان تخمینی صفر | 23514 | `CHECK` |
+| 11 | پذیرش بیش از یک پیشنهاد در یک پروژه | 23514 | تریگر |
+| 12 | همین، با تریگر غیرفعال | 23505 | ایندکس یکتای جزئی |
+| 13 | پیشنهاد برای پروژهٔ خود | 23514 | تریگر |
+| 14 | پیشنهاد برای پروژهٔ غیر Open | 23514 | تریگر |
+| 15–18 | مدیر: پروژه/پیشنهاد/پروفایل / ارتقای کاربر دارای داده به مدیر | 23514 | تریگر |
+| 19–21 | رمز متن ساده، ایمیل نامعتبر، وضعیت نامعتبر | 23514 | CHECK |
+| 22–27 | انتقال وضعیت غیرمجاز، تغییر نوع قیمت، ویرایش پیشنهاد پذیرفته‌شده | 23514 | تریگر |
+| 28–29 | حذف کاربر/پروژهٔ دارای سابقه | 23503 | `ON DELETE RESTRICT` |
+| 30–32 | پروفایل دوم، مهارت/دستهٔ تکراری | 23505 | UNIQUE |
+| 33–36 | موارد مثبت: پیشنهاد معتبر، پذیرش، پس‌گرفتن، لغو پروژه | 00000 | — |
 
-- A proposal can only be accepted while its project is `open`.
-- Once a proposal is accepted, the project automatically moves to `in_progress`.
-- All other pending proposals for that project are automatically rejected.
+## محدودیت‌ها و کارهای بعد
 
-This behavior follows the design decision based on Question 2 in `requirements.md`.
+- وجود حداقل یک دسته/مهارت برای پروژهٔ Open در لایهٔ برنامه کنترل می‌شود.
+- اعتبارسنجی نهایی رمز/ایمیل/OTP، نشست و مجوزدهی در برنامهٔ بک‌اند.
+- بعداً: `messages`, `reviews`, `payments/milestones`, `notifications`, ستون ارز، تاریخچهٔ تغییر وضعیت (`status_history`), جست‌وجوی متنی (GIN/`tsvector`).
 
-**Proposal editing and withdrawal:**
+## فاز ۳: ورود، ثبت‌نام و بازیابی رمز عبور (برنامهٔ وب)
 
-- Only pending proposals can be edited.
-- A freelancer can withdraw a pending proposal.
-- `withdrawn` means the freelancer withdrew the proposal before acceptance.
-- `rejected` means the client rejected it, or it was rejected because the project was cancelled or another proposal was accepted.
+**فناوری:** Python + Flask، PostgreSQL (درایور psycopg 3). کد در پوشهٔ `web/` است.
 
-## Database Testing
+### اجرا (ویندوز)
 
-The `database/tests.sql` file contains **36 automated tests** covering database constraints and business rules.
+1. Python 3.12 را از python.org نصب کنید (تیک **Add python.exe to PATH**).
+2. دیتابیس را با `database/schema.sql` و بعد `database/seed.sql` بسازید (نسخهٔ جدید که جدول `password_reset_tokens` را دارد).
+3. در پوشهٔ `web` فایل `.env.example` را کپی کنید و اسمش را `.env` بگذارید. `SECRET_KEY` و `DB_PASSWORD` را پر کنید.
+4. در PowerShell/cmd داخل پوشهٔ `web`:
 
-Each test runs inside a separate subtransaction and is rolled back afterward, ensuring that the sample data remains unchanged.
+```
+py -m pip install -r requirements.txt
+py app.py
+```
 
-### Expected SQLSTATE Codes
+5. مرورگر: http://127.0.0.1:5000
 
-| SQLSTATE | Meaning |
-|---|---|
-| `23505` | Unique constraint violation |
-| `23503` | Foreign key violation |
-| `23514` | CHECK constraint or business rule violation |
-| `00000` | Successful execution |
+حساب‌های نمونهٔ seed: `ali.ahmadi@example.com` با رمز `Sample#Pass1` (بقیه Pass0 تا Pass4). حساب جدید هم می‌توانید بسازید.
+لینک بازیابی رمز در حالت توسعه (`DEV_MODE=1`) در ترمینال چاپ می‌شود و در http://127.0.0.1:5000/dev/mailbox دیده می‌شود.
 
-### Test Coverage
+### تصمیم‌های امنیتی
 
-| Test Numbers | Description | Expected Result |
-|---|---|---|
-| 1–2 | Duplicate email addresses, including case variations | `23505` |
-| 3–4 | Invalid foreign key references | `23503` |
-| 5 | Duplicate proposal by the same freelancer for the same project | `23505` |
-| 6–8 | Zero or negative project budgets and hourly rates | `23514` |
-| 9–10 | Zero proposal amount or estimated time | `23514` |
-| 11 | Multiple accepted proposals for one project | `23514` |
-| 12 | Multiple accepted proposals with the trigger disabled | `23505` |
-| 13 | Submitting a proposal for one's own project | `23514` |
-| 14 | Submitting a proposal for a non-open project | `23514` |
-| 15–18 | Administrator restrictions, including promoting users with existing data | `23514` |
-| 19–21 | Plaintext passwords, invalid email addresses, and invalid statuses | `23514` |
-| 22–27 | Invalid status transitions, changing pricing type, and editing accepted proposals | `23514` |
-| 28–29 | Deleting users or projects with existing history | `23503` |
-| 30–32 | Duplicate profiles, skills, or categories | `23505` |
-| 33–36 | Valid proposal submission, acceptance, withdrawal, and project cancellation | `00000` |
+- رمز فقط در Backend و با **PBKDF2-HMAC-SHA256** (۶۰۰٬۰۰۰ دور، salt تصادفی) هش می‌شود؛ متن ساده، MD5 و SHA-256 ساده برای رمز استفاده نشده.
+- پیام خطای ورود مشخص نمی‌کند ایمیل غلط است یا رمز؛ مقایسهٔ رمز برای ایمیل ناشناس هم انجام می‌شود (زمان یکسان).
+- پیام «فراموشی رمز» همیشه یکسان است و وجود/نبود ایمیل را فاش نمی‌کند.
+- لینک بازیابی: توکن تصادفی ۲۵۶ بیتی؛ فقط SHA-256 آن در دیتابیس؛ ۳۰ دقیقه اعتبار؛ یک‌بارمصرف؛ با ساخت لینک جدید، لینک‌های قبلی باطل می‌شوند.
+- تمام فرم‌ها توکن CSRF دارند؛ کوکی سشن HttpOnly و SameSite است؛ با هر ورود سشن جدید ساخته می‌شود؛ خروج سشن را پاک می‌کند؛ صفحات با `Cache-Control: no-store` ارائه می‌شوند.
+- همهٔ SQLها پارامتری هستند. `.env` در `.gitignore` است و هرگز آپلود نمی‌شود.
 
-## Limitations and Future Improvements
+### محدودیت‌ها (برای نسخه‌های بعد)
 
-Some features are intentionally left for future application-layer implementation.
-
-### Current Limitations
-
-- Requiring at least one category and one skill for an open project is enforced at the application layer.
-- Password hashing, email and OTP validation, session management, and authorization are handled by the backend application.
-
-### Future Improvements
-
-Potential future features include:
-
-- Direct messaging between clients and freelancers.
-- Reviews and ratings.
-- Payment processing and milestone management.
-- Notifications.
-- Support for multiple currencies through a dedicated currency column.
-- Status history tracking.
-- Full-text search using PostgreSQL GIN indexes and `tsvector`.
-
----
-
-**Project Status:** Phase 1 – Requirements Analysis and Database Design and Implementation.
+- سشن در کوکی امضاشده نگهداری می‌شود؛ تغییر رمز، سشن‌های دیگر دستگاه‌ها را فوراً باطل نمی‌کند.
+- محدودیت تعداد تلاش ورود (Rate limiting) و ارسال واقعی ایمیل (SMTP) پیاده نشده است.
