@@ -6,8 +6,8 @@
 | مورد | مقدار |
 |---|---|
 | DBMS | **PostgreSQL 17** (pgAdmin 4) |
-| تیم | `[نام اعضا]` |
-| Jira | `[لینک برد]` |
+| تیم | `Shib04` |
+| Jira | `https://highshib.atlassian.net/jira/software/projects/FM/boards/3?filter=&groupBy=none` |
 | نقش‌ها | کاربر عادی (هم کارفرما، هم فریلنسر) و مدیر (Admin) |
 
 ## ساختار مخزن
